@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Profit Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    
+    <!-- Auth Pages -->
+    <div id="authSection">
+        <!-- Login Page -->
+        <div id="loginPage" class="flex items-center justify-center min-h-screen p-6">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">📊 Login</h1>
+                <div class="space-y-4">
+                    <input type="text" id="loginUsername" placeholder="Username" class="w-full border rounded-lg px-4 py-3">
+                    <input type="password" id="loginPassword" placeholder="Password" class="w-full border rounded-lg px-4 py-3">
+                    <button onclick="login()" class="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition font-semibold">
+                        Login
+                    </button>
+                    <p class="text-center text-gray-600">
+                        <a href="#" onclick="showForgotPassword()" class="text-indigo-600 hover:underline">Forgot Password?</a>
+                    </p>
+                    <p class="text-center text-gray-600">
+                        Don't have an account? <a href="#" onclick="showSignup()" class="text-indigo-600 font-semibold">Sign up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signup Page -->
+        <div id="signupPage" class="hidden flex items-center justify-center min-h-screen p-6">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">📝 Sign Up</h1>
+                <div class="space-y-4">
+                    <input type="text" id="signupUsername" placeholder="Username" class="w-full border rounded-lg px-4 py-3">
+                    <input type="text" id="signupCompany" placeholder="Company Name" class="w-full border rounded-lg px-4 py-3">
+                    <input type="text" id="signupContact" placeholder="Email or Phone Number" class="w-full border rounded-lg px-4 py-3">
+                    <input type="password" id="signupPassword" placeholder="Password" class="w-full border rounded-lg px-4 py-3">
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" class="w-full border rounded-lg px-4 py-3">
+                    <button onclick="signup()" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition font-semibold">
+                        Sign Up
+                    </button>
+                    <p class="text-center text-gray-600">
+                        Already have an account? <a href="#" onclick="showLogin()" class="text-indigo-600 font-semibold">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forgot Password Page -->
+        <div id="forgotPasswordPage" class="hidden flex items-center justify-center min-h-screen p-6">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">🔑 Recover Password</h1>
+                <p class="text-gray-600 mb-4 text-center">Enter your username and contact info to recover your password</p>
+                <div class="space-y-4">
+                    <input type="text" id="recoverUsername" placeholder="Username" class="w-full border rounded-lg px-4 py-3">
+                    <input type="text" id="recoverContact" placeholder="Email or Phone Number" class="w-full border rounded-lg px-4 py-3">
+                    <button onclick="recoverPassword()" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition font-semibold">
+                        Recover Password
+                    </button>
+                    <p class="text-center text-gray-600">
+                        <a href="#" onclick="showLogin()" class="text-indigo-600 hover:underline">Back to Login</a>
+                    </p>
+                </div>
+                <div id="recoveredPasswordDisplay" class="hidden mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-gray-700 mb-2 font-semibold">Your password is:</p>
+                    <p id="recoveredPassword" class="text-2xl font-bold text-green-600"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appSection" class="hidden p-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-800 flex items-center gap-3">
+                        📈 Business Profit Tracker
+                    </h1>
+                    <p class="text-gray-600 mt-2">
+                        <span id="userDisplay" class="font-semibold text-indigo-600"></span> | <span id="companyDisplay" class="font-semibold text-blue-600"></span>
+                    </p>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <div id="syncStatus" class="text-sm text-gray-600"></div>
+                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Profit</p>
+                            <p id="totalProfit" class="text-3xl font-bold text-green-600">$0.00</p>
+                        </div>
+                        <span class="text-4xl">💰</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Sales</p>
+                            <p id="totalSales" class="text-3xl font-bold text-blue-600">$0.00</p>
+                        </div>
+                        <span class="text-4xl">📊</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Items</p>
+                            <p id="totalItems" class="text-3xl font-bold text-indigo-600">0</p>
+                        </div>
+                        <span class="text-4xl">📦</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Section -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Items</h2>
+                    <button onclick="toggleAddItem()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        ➕ Add Item
+                    </button>
+                </div>
+
+                <div id="addItemForm" class="bg-gray-50 p-4 rounded-lg mb-4 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="itemName" placeholder="Item Name" class="border rounded-lg px-4 py-2">
+                        <input type="number" id="costPrice" placeholder="Cost Price" step="0.01" class="border rounded-lg px-4 py-2">
+                        <input type="number" id="sellingPrice" placeholder="Selling Price" step="0.01" class="border rounded-lg px-4 py-2">
+                    </div>
+                    <button onclick="addItem()" class="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                        Save Item
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-3 px-4">Item Name</th>
+                                <th class="text-left py-3 px-4">Cost Price</th>
+                                <th class="text-left py-3 px-4">Selling Price</th>
+                                <th class="text-left py-3 px-4">Profit/Unit</th>
+                                <th class="text-left py-3 px-4">Total Profit</th>
+                                <th class="text-left py-3 px-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sales Section -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Sales</h2>
+                    <button onclick="toggleAddSale()" id="addSaleBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        ➕ Record Sale
+                    </button>
+                </div>
+
+                <div id="addSaleForm" class="bg-gray-50 p-4 rounded-lg mb-4 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <select id="saleItem" class="border rounded-lg px-4 py-2">
+                            <option value="">Select Item</option>
+                        </select>
+                        <input type="number" id="saleQuantity" placeholder="Quantity" class="border rounded-lg px-4 py-2">
+                        <input type="date" id="saleDate" class="border rounded-lg px-4 py-2">
+                    </div>
+                    <button onclick="addSale()" class="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                        Save Sale
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-3 px-4">Date</th>
+                                <th class="text-left py-3 px-4">Item</th>
+                                <th class="text-left py-3 px-4">Quantity</th>
+                                <th class="text-left py-3 px-4">Sale Amount</th>
+                                <th class="text-left py-3 px-4">Profit</th>
+                                <th class="text-left py-3 px-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx8Sgo8ica0ig-abY7RGK6pDBOyXshAwiXpJlzem392dPJxV17KUx01-qHJm-ZzTOm3/exec';
+
+        let currentUser = null;
+        let items = [];
+        let sales = [];
+
+        function checkAuth() {
+            const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            if (user) {
+                currentUser = user;
+                showApp();
+                loadData();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById('forgotPasswordPage').classList.add('hidden');
+        }
+
+        function showSignup() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('signupPage').classList.remove('hidden');
+            document.getElementById('forgotPasswordPage').classList.add('hidden');
+        }
+
+        function showForgotPassword() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById('forgotPasswordPage').classList.remove('hidden');
+            document.getElementById('recoveredPasswordDisplay').classList.add('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            document.getElementById('userDisplay').textContent = currentUser.username;
+            document.getElementById('companyDisplay').textContent = currentUser.companyName;
+            document.getElementById('saleDate').valueAsDate = new Date();
+        }
+
+        async function signup() {
+            const username = document.getElementById('signupUsername').value.trim();
+            const company = document.getElementById('signupCompany').value.trim();
+            const contact = document.getElementById('signupContact').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            if (!username || !company || !contact || !password) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            try {
+                showSyncStatus('Creating account...', true);
+                
+                const response = await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({
+                        type: 'register',
+                        username: username,
+                        companyName: company,
+                        contact: contact,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    alert('Account created successfully! You can now login.');
+                    showLogin();
+                } else {
+                    alert('Signup error: ' + (result.message || 'Please try again'));
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                alert('Signup error: ' + error.message);
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Please enter username and password');
+                return;
+            }
+
+            try {
+                showSyncStatus('Logging in...', true);
+                
+                console.log('Attempting login with:', {username, password});
+                
+                const response = await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({
+                        type: 'login',
+                        username: username,
+                        password: password
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                
+                const result = await response.json();
+                
+                console.log('Result:', result);
+                
+                if (result.status === 'success') {
+                    currentUser = {
+                        username: result.username,
+                        companyName: result.companyName
+                    };
+                    
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showApp();
+                    
+                    // Load data from Google Sheets
+                    await loadDataFromServer();
+                } else {
+                    alert('Login failed: ' + (result.message || 'Invalid username or password'));
+                    console.error('Login error:', result);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login error: ' + error.message + '\n\nMake sure you have signed up first!');
+            }
+        }
+
+        async function loadDataFromServer() {
+            try {
+                showSyncStatus('Loading your data...', true);
+                
+                const response = await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({
+                        type: 'load-data',
+                        username: currentUser.username,
+                        companyName: currentUser.companyName
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    items = result.data.items || [];
+                    sales = result.data.sales || [];
+                    
+                    // Save to local storage as cache
+                    saveItems();
+                    saveSales();
+                    
+                    updateUI();
+                    showSyncStatus('✅ Data loaded', true);
+                } else {
+                    // If no data on server, try loading from local cache
+                    loadData();
+                }
+            } catch (error) {
+                console.error('Error loading data from server:', error);
+                // Fallback to local data
+                loadData();
+                showSyncStatus('⚠️ Using local data', false);
+            }
+        }
+
+        async function recoverPassword() {
+            const username = document.getElementById('recoverUsername').value.trim();
+            const contact = document.getElementById('recoverContact').value.trim();
+
+            if (!username || !contact) {
+                alert('Please enter username and contact information');
+                return;
+            }
+
+            try {
+                const response = await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({
+                        type: 'recover-password',
+                        username: username,
+                        contact: contact
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('recoveredPassword').textContent = result.password;
+                    document.getElementById('recoveredPasswordDisplay').classList.remove('hidden');
+                } else {
+                    alert(result.message || 'Username or contact information not found');
+                }
+            } catch (error) {
+                alert('Error recovering password. Please try again.');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('businessItems_' + currentUser.username);
+                localStorage.removeItem('businessSales_' + currentUser.username);
+                currentUser = null;
+                items = [];
+                sales = [];
+                document.getElementById('authSection').classList.remove('hidden');
+                document.getElementById('appSection').classList.add('hidden');
+                showLogin();
+            }
+        }
+
+        function showSyncStatus(message, isSuccess = true) {
+            const status = document.getElementById('syncStatus');
+            status.textContent = message;
+            status.className = isSuccess ? 'text-sm text-green-600 font-semibold' : 'text-sm text-red-600 font-semibold';
+            setTimeout(() => status.textContent = '', 3000);
+        }
+
+        async function sendToGoogleSheets(data) {
+            try {
+                showSyncStatus('Syncing...', true);
+                data.username = currentUser.username;
+                data.companyName = currentUser.companyName;
+                
+                await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify(data)
+                });
+                showSyncStatus('✅ Synced', true);
+                return true;
+            } catch (error) {
+                showSyncStatus('⚠️ Sync failed', false);
+                return false;
+            }
+        }
+
+        function loadData() {
+            const savedItems = localStorage.getItem('businessItems_' + currentUser.username);
+            const savedSales = localStorage.getItem('businessSales_' + currentUser.username);
+            
+            if (savedItems) items = JSON.parse(savedItems);
+            if (savedSales) sales = JSON.parse(savedSales);
+            
+            updateUI();
+        }
+
+        function saveItems() {
+            localStorage.setItem('businessItems_' + currentUser.username, JSON.stringify(items));
+        }
+
+        function saveSales() {
+            localStorage.setItem('businessSales_' + currentUser.username, JSON.stringify(sales));
+        }
+
+        function toggleAddItem() {
+            document.getElementById('addItemForm').classList.toggle('hidden');
+        }
+
+        function toggleAddSale() {
+            document.getElementById('addSaleForm').classList.toggle('hidden');
+        }
+
+        async function addItem() {
+            const name = document.getElementById('itemName').value;
+            const costPrice = parseFloat(document.getElementById('costPrice').value);
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+
+            if (name && costPrice && sellingPrice) {
+                const newItem = {id: Date.now(), name, costPrice, sellingPrice};
+                items.push(newItem);
+                saveItems();
+
+                await sendToGoogleSheets({
+                    type: 'items',
+                    id: newItem.id,
+                    name: newItem.name,
+                    costPrice: newItem.costPrice,
+                    sellingPrice: newItem.sellingPrice
+                });
+
+                document.getElementById('itemName').value = '';
+                document.getElementById('costPrice').value = '';
+                document.getElementById('sellingPrice').value = '';
+                document.getElementById('addItemForm').classList.add('hidden');
+                updateUI();
+            } else {
+                alert('Please fill all fields');
+            }
+        }
+
+        async function deleteItem(id) {
+            if (confirm('Delete this item and all its sales?')) {
+                const item = items.find(i => i.id === id);
+                items = items.filter(item => item.id !== id);
+                sales = sales.filter(sale => sale.itemId !== id);
+                saveItems();
+                saveSales();
+
+                await sendToGoogleSheets({
+                    type: 'delete-item',
+                    id: id,
+                    itemName: item.name
+                });
+
+                updateUI();
+            }
+        }
+
+        async function addSale() {
+            const itemId = parseInt(document.getElementById('saleItem').value);
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            const date = document.getElementById('saleDate').value;
+
+            if (itemId && quantity && date) {
+                const item = items.find(i => i.id === itemId);
+                const saleAmount = item.sellingPrice * quantity;
+                const profit = (item.sellingPrice - item.costPrice) * quantity;
+
+                const newSale = {id: Date.now(), itemId, quantity, date};
+                sales.push(newSale);
+                saveSales();
+
+                await sendToGoogleSheets({
+                    type: 'sales',
+                    id: newSale.id,
+                    itemName: item.name,
+                    quantity: quantity,
+                    date: date,
+                    saleAmount: saleAmount,
+                    profit: profit
+                });
+
+                document.getElementById('saleItem').value = '';
+                document.getElementById('saleQuantity').value = '';
+                document.getElementById('saleDate').valueAsDate = new Date();
+                document.getElementById('addSaleForm').classList.add('hidden');
+                updateUI();
+            } else {
+                alert('Please fill all fields');
+            }
+        }
+
+        async function deleteSale(id) {
+            if (confirm('Delete this sale?')) {
+                sales = sales.filter(sale => sale.id !== id);
+                saveSales();
+
+                await sendToGoogleSheets({type: 'delete-sale', id: id});
+                updateUI();
+            }
+        }
+
+        function calculateItemProfit(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return 0;
+            const itemSales = sales.filter(s => s.itemId === itemId);
+            const totalQuantity = itemSales.reduce((sum, s) => sum + s.quantity, 0);
+            return (item.sellingPrice - item.costPrice) * totalQuantity;
+        }
+
+        function updateUI() {
+            const itemsTable = document.getElementById('itemsTable');
+            itemsTable.innerHTML = items.map(item => {
+                const profitPerUnit = item.sellingPrice - item.costPrice;
+                const totalProfit = calculateItemProfit(item.id);
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4">${item.name}</td>
+                        <td class="py-3 px-4">$${item.costPrice.toFixed(2)}</td>
+                        <td class="py-3 px-4">$${item.sellingPrice.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-green-600 font-semibold">$${profitPerUnit.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-green-600 font-bold">$${totalProfit.toFixed(2)}</td>
+                        <td class="py-3 px-4">
+                            <button onclick="deleteItem(${item.id})" class="text-red-600 hover:text-red-800">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            const salesTable = document.getElementById('salesTable');
+            salesTable.innerHTML = sales.map(sale => {
+                const item = items.find(i => i.id === sale.itemId);
+                if (!item) return '';
+                const profit = (item.sellingPrice - item.costPrice) * sale.quantity;
+                const saleAmount = item.sellingPrice * sale.quantity;
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4">${sale.date}</td>
+                        <td class="py-3 px-4">${item.name}</td>
+                        <td class="py-3 px-4">${sale.quantity}</td>
+                        <td class="py-3 px-4">$${saleAmount.toFixed(2)}</td>
+                        <td class="py-3 px-4 text-green-600 font-semibold">$${profit.toFixed(2)}</td>
+                        <td class="py-3 px-4">
+                            <button onclick="deleteSale(${sale.id})" class="text-red-600 hover:text-red-800">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            const saleSelect = document.getElementById('saleItem');
+            saleSelect.innerHTML = '<option value="">Select Item</option>' + 
+                items.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+
+            const totalProfit = items.reduce((sum, item) => sum + calculateItemProfit(item.id), 0);
+            const totalSales = sales.reduce((sum, sale) => {
+                const item = items.find(i => i.id === sale.itemId);
+                return sum + (item ? item.sellingPrice * sale.quantity : 0);
+            }, 0);
+
+            document.getElementById('totalProfit').textContent = `$${totalProfit.toFixed(2)}`;
+            document.getElementById('totalSales').textContent = `$${totalSales.toFixed(2)}`;
+            document.getElementById('totalItems').textContent = items.length;
+            document.getElementById('addSaleBtn').disabled = items.length === 0;
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
