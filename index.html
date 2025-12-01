@@ -312,8 +312,6 @@
             try {
                 showSyncStatus('Logging in...', true);
                 
-                console.log('Attempting login with:', {username, password});
-                
                 const response = await fetch(GOOGLE_SHEETS_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'text/plain'},
@@ -324,11 +322,7 @@
                     })
                 });
 
-                console.log('Response status:', response.status);
-                
                 const result = await response.json();
-                
-                console.log('Result:', result);
                 
                 if (result.status === 'success') {
                     currentUser = {
@@ -343,7 +337,6 @@
                     await loadDataFromServer();
                 } else {
                     alert('Login failed: ' + (result.message || 'Invalid username or password'));
-                    console.error('Login error:', result);
                 }
             } catch (error) {
                 console.error('Login error:', error);
@@ -351,6 +344,7 @@
             }
         }
 
+        // ---------- FIXED: robust for new users ----------
         async function loadDataFromServer() {
             try {
                 showSyncStatus('Loading your data...', true);
@@ -366,28 +360,31 @@
                 });
 
                 const result = await response.json();
-                
+
                 if (result.status === 'success') {
-                    items = result.data.items || [];
-                    sales = result.data.sales || [];
-                    
-                    // Save to local storage as cache
+                    const serverData = result.data || {};
+
+                    items = Array.isArray(serverData.items) ? serverData.items : [];
+                    sales = Array.isArray(serverData.sales) ? serverData.sales : [];
+
+                    // cache locally
                     saveItems();
                     saveSales();
-                    
+
                     updateUI();
                     showSyncStatus('✅ Data loaded', true);
                 } else {
-                    // If no data on server, try loading from local cache
+                    // if no server data, fall back to local cache
                     loadData();
                 }
             } catch (error) {
                 console.error('Error loading data from server:', error);
-                // Fallback to local data
+                // fallback to local data
                 loadData();
                 showSyncStatus('⚠️ Using local data', false);
             }
         }
+        // -------------------------------------------------
 
         async function recoverPassword() {
             const username = document.getElementById('recoverUsername').value.trim();
@@ -425,8 +422,10 @@
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('currentUser');
-                localStorage.removeItem('businessItems_' + currentUser.username);
-                localStorage.removeItem('businessSales_' + currentUser.username);
+                if (currentUser && currentUser.username) {
+                    localStorage.removeItem('businessItems_' + currentUser.username);
+                    localStorage.removeItem('businessSales_' + currentUser.username);
+                }
                 currentUser = null;
                 items = [];
                 sales = [];
@@ -462,21 +461,32 @@
             }
         }
 
+        // ---------- FIXED: safe local loading ----------
         function loadData() {
+            if (!currentUser || !currentUser.username) {
+                items = [];
+                sales = [];
+                updateUI();
+                return;
+            }
+
             const savedItems = localStorage.getItem('businessItems_' + currentUser.username);
             const savedSales = localStorage.getItem('businessSales_' + currentUser.username);
             
-            if (savedItems) items = JSON.parse(savedItems);
-            if (savedSales) sales = JSON.parse(savedSales);
+            items = savedItems ? JSON.parse(savedItems) : [];
+            sales = savedSales ? JSON.parse(savedSales) : [];
             
             updateUI();
         }
+        // ----------------------------------------------
 
         function saveItems() {
+            if (!currentUser || !currentUser.username) return;
             localStorage.setItem('businessItems_' + currentUser.username, JSON.stringify(items));
         }
 
         function saveSales() {
+            if (!currentUser || !currentUser.username) return;
             localStorage.setItem('businessSales_' + currentUser.username, JSON.stringify(sales));
         }
 
@@ -527,7 +537,7 @@
                 await sendToGoogleSheets({
                     type: 'delete-item',
                     id: id,
-                    itemName: item.name
+                    itemName: item ? item.name : ''
                 });
 
                 updateUI();
